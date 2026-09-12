@@ -162,6 +162,29 @@
     margin-top: 20px; max-width: 460px;
   }
 
+  /* ============ TANDPASTA ============ */
+  .tandpasta-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 20px 0;
+    animation: fadeUp .6s ease;
+  }
+  .tandpasta-stage img {
+    max-width: 100%;
+    max-height: 70vh;
+    width: auto;
+    height: auto;
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 60px rgba(124,92,255,.2);
+    border: 2px solid rgba(124,92,255,.25);
+  }
+  .tandpasta-stage .photo-fallback {
+    position: static;
+    font-size: 160px;
+  }
+
   /* ============ YOUTUBE EMBED ============ */
   .video-embed {
     position: relative;
@@ -492,6 +515,7 @@
     .bible-text { font-size: 17px; line-height: 1.65; }
     .leader-bar button { padding: 8px 10px; font-size: 13px; }
     .video-embed { max-width: 100%; }
+    .tandpasta-stage img { max-height: 60vh; border-radius: 16px; }
   }
 </style>
 </head>
@@ -569,7 +593,7 @@ if (!uid) { uid = 'u' + Math.random().toString(36).slice(2, 10); sessionStorage.
 
 let userName = sessionStorage.getItem('name') || '';
 let isLeader = sessionStorage.getItem('role') === 'leider';
-let currentScreenId = 'welcome';
+let currentScreenId = 'tandpasta';
 let currentPhotoIdx = 0;
 
 // =====================================================
@@ -618,7 +642,8 @@ const QUESTIONS = {
 };
 
 const SCREENS = [
-  { id: 'welcome', label: '🏠 Welkom' },
+  { id: 'tandpasta', label: '🪥 Tandpasta' },
+  { id: 'welcome', label: '🎬 Video' },
   { id: 'binnenkomer', label: '📸 Eerste indruk' },
   { id: 'bijbel', label: '📖 Bijbeltekst' },
   { id: 'gesprek', label: '💬 Gesprek' },
@@ -705,13 +730,14 @@ function buildAllScreens() {
     div.innerHTML = renderScreen(s.id);
     screensContainer.appendChild(div);
   });
-  updateHeaderTitle('welcome');
+  updateHeaderTitle('tandpasta');
   bindSubmitHandlers();
   bindRevealHandlers();
 }
 
 function renderScreen(id) {
   switch (id) {
+    case 'tandpasta': return renderTandpasta();
     case 'welcome': return renderWelcome();
     case 'binnenkomer': return renderBinnenkomer();
     case 'bijbel': return renderBijbel();
@@ -721,6 +747,14 @@ function renderScreen(id) {
     case 'einde': return renderEinde();
   }
   return '';
+}
+
+function renderTandpasta() {
+  return `
+    <div class="tandpasta-stage">
+      <img src="tandpasta.jpeg" alt="" onerror="this.parentElement.innerHTML='<div class=&quot;photo-fallback&quot;>🪥</div>';">
+    </div>
+  `;
 }
 
 function renderWelcome() {
@@ -876,7 +910,7 @@ function buildLeaderSelect() {
     opt.textContent = s.label;
     screenSelect.appendChild(opt);
   });
-  screenSelect.value = 'welcome';
+  screenSelect.value = 'tandpasta';
 }
 
 function bindLeaderControls() {
