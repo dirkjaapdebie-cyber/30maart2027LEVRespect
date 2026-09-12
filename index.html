@@ -205,6 +205,10 @@
     height: 100%;
     border: 0;
   }
+  .video-embed.wide {
+    aspect-ratio: 16/9;
+    max-width: 340px;
+  }
   .video-intro {
     font-size: 18px;
     line-height: 1.55;
@@ -435,6 +439,17 @@
   .feed-item.mine { background: rgba(255,92,168,.1); border-color: rgba(255,92,168,.3); }
   .feed-item.mine .feed-name { color: #ff8ec0; }
 
+  /* Gebedspunten: geen naam, alleen tekst */
+  .feed-item.no-name {
+    background: rgba(255,215,100,.08);
+    border-color: rgba(255,215,100,.2);
+  }
+  .feed-item.no-name .feed-text {
+    font-size: 15px;
+    color: #f0e6c8;
+    padding-top: 0;
+  }
+
   /* ============ LIEDJES / BIDDEN ============ */
   .list-card {
     background: rgba(26,26,46,.65);
@@ -608,7 +623,7 @@ const PHOTOS = [
   {
     id: 'p2', name: 'Mikhail Kalashnikov',
     info: 'Russische wapenontwerper. Bedacht het bekende AK-47 geweer.',
-    img: 'Screenshot 2026-09-12 10.36.06.png'
+    img: 'SScreenshot 2026-09-12 10.36.06.png'
   },
   {
     id: 'p3', name: 'Aletta Jacobs',
@@ -789,7 +804,7 @@ function renderWelcome() {
 function renderBinnenkomer() {
   return `
     <h2 class="screen-h">Eerste <em>indruk</em></h2>
-    <p class="screen-intro">Je eerste indruk van iemand zegt vaak meer over jou dan over de ander. Kijk goed naar de foto. Wie denk je dat dit is? Zou je respect hebben voor deze persoon?</p>
+    <p class="screen-intro">Je eerste indruk van iemand zegt vaak meer over jou dan over de ander. Kijk goed naar de foto. Wie denk je dat dit is?</p>
     <div class="photo-stage">
       ${PHOTOS.map((p, i) => `
         <div class="photo-slide${i === 0 ? '' : ' hidden'}" data-photo-slide="${i}">
@@ -880,11 +895,31 @@ function renderBidden() {
         <li>OTH 374 – Ik wil jou van harte dienen</li>
         <li>Psalm 15:2 & 3</li>
       </ul>
+      <p style="font-size:15px; color:#a8a8c0; margin:20px 0 12px;">🎬 <strong>Dit is mijn gebod</strong> — beluister en zing mee:</p>
+      <div class="video-embed wide" style="margin:0 auto 4px;">
+        <iframe
+          src="https://www.youtube.com/embed/adPsiusq6NY?rel=0&modestbranding=1"
+          title="Dit is mijn gebod"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
     </div>
     <div class="list-card">
       <h3>🙏 Gebed</h3>
       <p>Dank God dat Hij ieder van ons waardevol vindt en dat we naar Zijn beeld geschapen zijn.</p>
       <p style="margin-top:12px">Bid om wijsheid om hier op een goede manier mee om te gaan — door respect te uiten naar de mensen om ons heen, die óók naar Gods beeld geschapen zijn.</p>
+    </div>
+    <div class="q-block" data-qid="gebedspunten">
+      <div class="q-header">
+        <div class="q-num">🙏</div>
+        <div class="q-text">Waar wil jij voor bidden? Deel je gebedspunt — het verschijnt direct bij iedereen.</div>
+      </div>
+      <div class="q-input-row">
+        <input type="text" placeholder="Typ je gebedspunt..." autocomplete="off">
+        <button class="q-send">➤</button>
+      </div>
+      <div class="q-feed" data-feed="gebedspunten"></div>
     </div>
   `;
 }
@@ -926,7 +961,6 @@ function bindLeaderControls() {
   });
   screenSelect.addEventListener('change', (e) => setCurrentScreen(e.target.value));
 
-  // Foto navigatie
   $('#prevPhotoBtn').addEventListener('click', () => {
     if (currentPhotoIdx > 0) set(ref(db, 'session/currentPhoto'), currentPhotoIdx - 1);
   });
@@ -934,7 +968,6 @@ function bindLeaderControls() {
     if (currentPhotoIdx < PHOTOS.length - 1) set(ref(db, 'session/currentPhoto'), currentPhotoIdx + 1);
   });
 
-  // Reset
   $('#resetBtn').addEventListener('click', async () => {
     if (!confirm('Weet je zeker dat je ALLE antwoorden en deelnemers wilt verwijderen? Dit kan niet ongedaan gemaakt worden.')) return;
     await remove(ref(db, 'session/responses'));
@@ -956,7 +989,6 @@ function showScreen(id) {
   if (isLeader) screenSelect.value = id;
   currentScreenId = id;
 
-  // Toon/verberg foto-navigatie
   if (isLeader) {
     photoControls.classList.toggle('hidden', id !== 'binnenkomer');
   }
@@ -991,19 +1023,16 @@ function showPhotoSlide(idx) {
 //  FIREBASE LISTENERS
 // =====================================================
 function setupFirebaseListeners() {
-  // Scherm volgen
   onValue(ref(db, 'session/currentScreen'), (snap) => {
     const id = snap.val();
     if (id && SCREENS.some(s => s.id === id)) showScreen(id);
   });
 
-  // Foto-index volgen
   onValue(ref(db, 'session/currentPhoto'), (snap) => {
     const idx = snap.val() ?? 0;
     showPhotoSlide(Math.max(0, Math.min(PHOTOS.length - 1, idx)));
   });
 
-  // Onthullingen
   onValue(ref(db, 'session/revealed'), (snap) => {
     const data = snap.val() || {};
     PHOTOS.forEach(p => {
@@ -1012,9 +1041,9 @@ function setupFirebaseListeners() {
     });
   });
 
-  // Feeds: video + per foto + per vraag
   const allQuestions = [
     { id: 'video-reactie' },
+    { id: 'gebedspunten' },
     ...PHOTOS.map(p => ({ id: 'foto-' + p.id })),
     ...QUESTIONS.gesprek,
     ...QUESTIONS.denkduwtjes
@@ -1031,11 +1060,12 @@ function setupFirebaseListeners() {
       const empty = feedEl.querySelector('.feed-empty');
       if (empty) empty.remove();
       const item = document.createElement('div');
-      item.className = 'feed-item' + (data.uid === uid ? ' mine' : '');
-      item.innerHTML = `
-        <div class="feed-name">${escapeHtml(data.name || '?')}</div>
-        <div class="feed-text">${escapeHtml(data.text || '')}</div>
-      `;
+      const isGebed = q.id === 'gebedspunten';
+      item.className = 'feed-item' + (isGebed ? ' no-name' : '') + (data.uid === uid ? ' mine' : '');
+      item.innerHTML = isGebed
+        ? `<div class="feed-text">${escapeHtml(data.text || '')}</div>`
+        : `<div class="feed-name">${escapeHtml(data.name || '?')}</div>
+           <div class="feed-text">${escapeHtml(data.text || '')}</div>`;
       feedEl.appendChild(item);
       feedEl.scrollTop = feedEl.scrollHeight;
     });
