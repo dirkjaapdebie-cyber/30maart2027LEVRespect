@@ -663,8 +663,15 @@
     <p class="sub">Tieneravond • Jakobus 3:5–12</p>
     <div id="roleChoice">
       <button class="btn btn-primary" data-role="deelnemer">Ik doe mee als deelnemer</button>
-      <button class="btn btn-secondary" data-role="leider">Ik ben gespreksleider</button>
+      <button class="btn btn-secondary" id="leiderChoiceBtn">Ik ben gespreksleider</button>
+      
+      <!-- Wachtwoord invoerveld voor leider (standaard verborgen) -->
+      <div id="leaderPasswordEntry" class="hidden" style="margin-top: 15px;">
+        <input id="leaderPassInput" type="password" placeholder="Voer leiderswachtwoord in" style="width: 100%; padding: 14px; background: rgba(0,0,0,.35); border: 2px solid rgba(124,92,255,.3); border-radius: 14px; color: white; font-size: 16px; text-align: center; margin-bottom: 10px; outline: none;">
+        <button class="btn btn-primary" id="leiderLoginBtn">Inloggen als leider →</button>
+      </div>
     </div>
+    
     <div id="nameEntry" class="hidden">
       <input id="nameInput" type="text" placeholder="Jouw voornaam" maxlength="20" autocomplete="off">
       <button class="btn btn-primary" id="joinBtn">Doe mee →</button>
@@ -738,6 +745,9 @@ let pendingBoardData = null;
 let selectedColor = 'yellow';
 let groupInfo = null;
 let timerExpired = false;
+
+// Leiderswachtwoord (pas dit gerust aan)
+const LEIDER_WACHTWOORD = "tieneravond2026";
 
 // =====================================================
 //  CONTENT
@@ -826,24 +836,45 @@ const photoControls = $('#photoControls');
 const photoCounter = $('#photoCounter');
 const toast = $('#toast');
 // =====================================================
-//  LOGIN
+//  LOGIN & LEIDER WACHTWOORD LOGICA
 // =====================================================
 document.querySelectorAll('[data-role]').forEach(btn => {
   btn.addEventListener('click', () => {
     const role = btn.dataset.role;
-    if (role === 'leider') {
-      isLeader = true;
-      userName = 'Leider';
-      sessionStorage.setItem('role', 'leider');
-      sessionStorage.setItem('name', userName);
-      startApp();
-    } else {
+    if (role === 'deelnemer') {
       $('#roleChoice').classList.add('hidden');
       $('#nameEntry').classList.remove('hidden');
       $('#nameInput').focus();
     }
   });
 });
+
+// Toon het wachtwoordveld wanneer op de leiderknop wordt geklikt
+$('#leiderChoiceBtn').addEventListener('click', () => {
+  $('#leaderPasswordEntry').classList.toggle('hidden');
+  $('#leaderPassInput').focus();
+});
+
+// Controleer het wachtwoord
+$('#leiderLoginBtn').addEventListener('click', () => {
+  const ingevoerdWachtwoord = $('#leaderPassInput').value;
+  if (ingevoerdWachtwoord === LEIDER_WACHTWOORD) {
+    isLeader = true;
+    userName = 'Leider';
+    sessionStorage.setItem('role', 'leider');
+    sessionStorage.setItem('name', userName);
+    startApp();
+  } else {
+    showToast('Onjuist leiderswachtwoord! ❌');
+    $('#leaderPassInput').value = '';
+  }
+});
+
+// Ook direct inloggen met Enter op het wachtwoordveld
+$('#leaderPassInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { $('#leiderLoginBtn').click(); }
+});
+
 $('#joinBtn').addEventListener('click', joinAsParticipant);
 $('#nameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') joinAsParticipant(); });
 function joinAsParticipant() {
@@ -1179,13 +1210,11 @@ function bindLeaderControls() {
         return;
       }
 
-      // Schud de lijst willekeurig door elkaar
       for (let i = list.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [list[i], list[j]] = [list[j], list[i]];
       }
 
-      // Verdeel in groepjes van 3 (of duo als er 2 overblijven)
       const groups = [];
       let currentGroup = [];
       
@@ -1207,14 +1236,12 @@ function bindLeaderControls() {
           assignment[member.id] = {
             groupNum: gIndex + 1,
             members: group.map(m => m.name),
-            isTypist: mIndex === 0 // Eerste van het groepje is de invoerder!
+            isTypist: mIndex === 0
           };
         });
       });
 
       set(ref(db, 'session/groups'), assignment);
-      
-      // Start automatisch een timer van 2 minuten bij het genereren van groepen
       set(ref(db, 'session/timer'), { duration: 120, endsAt: Date.now() + 120000 });
       showToast('Groepen gegenereerd & gesprekstijd gestart! ✓');
     }, { onlyOnce: true });
@@ -1432,13 +1459,11 @@ function setupFirebaseListeners() {
     });
   });
   
-  // Groepinfo per user
   onValue(ref(db, `session/groups/${uid}`), (snap) => {
     groupInfo = snap.val();
     updateInputPermissions();
   });
 
-  // Timer luisteren
   onValue(ref(db, 'session/timer'), (snap) => {
     const timerData = snap.val();
     if (!timerData) {
