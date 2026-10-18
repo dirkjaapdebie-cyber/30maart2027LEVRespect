@@ -36,11 +36,11 @@
     padding: 24px; z-index: 100;
   }
   .login-card {
-    width: 100%; max-width: 420px;
+    width: 100%; max-width: 440px;
     background: rgba(26,26,46,.85);
     border: 1px solid rgba(124,92,255,.35);
     border-radius: 24px;
-    padding: 40px 28px;
+    padding: 36px 26px;
     backdrop-filter: blur(20px);
     box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 60px rgba(124,92,255,.15);
     text-align: center;
@@ -58,10 +58,10 @@
     -webkit-text-fill-color: transparent;
     margin-bottom: 4px;
   }
-  .login-card .sub { color: #8888a8; font-size: 15px; margin-bottom: 32px; }
+  .login-card .sub { color: #8888a8; font-size: 15px; margin-bottom: 26px; }
   .btn {
     display: block; width: 100%;
-    padding: 16px; border-radius: 14px;
+    padding: 15px; border-radius: 14px;
     font-size: 18px; font-weight: 400;
     transition: transform .15s, box-shadow .15s, background .15s;
     margin-bottom: 12px;
@@ -91,6 +91,24 @@
   }
   #nameInput:focus { border-color: #7c5cff; }
   #nameInput::placeholder { color: #55557a; font-weight: 400; }
+  
+  /* Lobby op login scherm */
+  .login-lobby {
+    margin-top: 22px;
+    border-top: 1px solid rgba(124,92,255,0.2);
+    padding-top: 14px;
+  }
+  .lobby-title { font-size: 13px; color: #8888a8; margin-bottom: 8px; }
+  .lobby-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-height: 110px; overflow-y: auto;
+  }
+  .lobby-tag {
+    font-size: 13px; padding: 4px 10px;
+    background: rgba(124,92,255,0.18);
+    border: 1px solid rgba(124,92,255,0.35);
+    border-radius: 999px; color: #d8d8e8;
+  }
+
   /* ============ APP LAYOUT ============ */
   #app { min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
   .app-header {
@@ -110,6 +128,7 @@
     -webkit-text-fill-color: transparent;
   }
   #screenTitle { font-size: 14px; color: #8888a8; font-weight: 400; flex: 1; text-align: center; }
+  .header-pills { display: flex; align-items: center; gap: 8px; }
   .pill {
     background: rgba(124,92,255,.18);
     border: 1px solid rgba(124,92,255,.35);
@@ -118,6 +137,9 @@
     font-size: 13px; font-weight: 400;
     white-space: nowrap;
   }
+  .pill-clickable { cursor: pointer; transition: background .15s; }
+  .pill-clickable:hover { background: rgba(124,92,255,.3); }
+
   main {
     flex: 1;
     padding: 24px 18px 160px;
@@ -383,21 +405,29 @@
     border-radius: 14px;
     color: white; font-size: 16px;
     outline: none;
-    transition: border .2s;
+    transition: border .2s, background .2s;
   }
   .q-input-row input:focus { border-color: #7c5cff; }
-  .q-input-row input::placeholder { color: #55557a; }
+  .q-input-row input:not(:disabled) {
+    border-color: rgba(124,92,255,.5);
+    background: rgba(124,92,255,.08);
+  }
+  .q-input-row input:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+  .q-input-row input::placeholder { color: #6b6b90; }
   .q-send {
     background: linear-gradient(135deg, #7c5cff, #ff5ca8);
     color: white; border-radius: 14px;
     padding: 0 20px; font-size: 20px; font-weight: 700;
-    transition: transform .12s, box-shadow .2s;
+    transition: transform .12s, box-shadow .2s, opacity .2s;
     box-shadow: 0 4px 16px rgba(124,92,255,.3);
   }
   .q-send:active { transform: scale(.93); }
   .q-feed {
     display: flex; flex-direction: column; gap: 8px;
-    max-height: 300px; overflow-y: auto;
+    max-height: 320px; overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(124,92,255,.3) transparent;
   }
@@ -408,7 +438,7 @@
     background: rgba(124,92,255,.08);
     border: 1px solid rgba(124,92,255,.15);
     border-radius: 12px;
-    padding: 10px 12px;
+    padding: 10px 14px;
     animation: itemIn .35s cubic-bezier(.34,1.56,.64,1);
   }
   @keyframes itemIn {
@@ -419,12 +449,20 @@
     flex-shrink: 0;
     font-family: 'Caveat', cursive;
     font-weight: 700; font-size: 19px; color: #b8a8ff;
-    min-width: 54px; line-height: 1.2;
+    min-width: 60px; line-height: 1.2;
   }
   .feed-name::after { content: ":"; color: #7c5cff; margin-right: 2px; }
-  .feed-text { font-size: 15px; line-height: 1.45; color: #d8d8e8; flex: 1; word-break: break-word; padding-top: 2px; }
+  .feed-text { 
+    font-size: 15px; 
+    line-height: 1.5; 
+    color: #d8d8e8; 
+    flex: 1; 
+    word-break: break-word; 
+    white-space: pre-wrap; 
+    padding-top: 2px; 
+  }
   .feed-empty { font-size: 14px; color: #55557a; font-style: italic; padding: 6px 2px; }
-  .feed-item.mine { background: rgba(255,92,168,.1); border-color: rgba(255,92,168,.3); }
+  .feed-item.mine { background: rgba(255,92,168,.12); border-color: rgba(255,92,168,.35); }
   .feed-item.mine .feed-name { color: #ff8ec0; }
   .feed-item.no-name {
     background: rgba(255,215,100,.08);
@@ -641,6 +679,48 @@
     transition: opacity .25s, transform .25s;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+  /* ============ DEELNEMERS BEHEER MODAL ============ */
+  #participantModal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+    z-index: 250; display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-card {
+    background: #151528; border: 1px solid rgba(124,92,255,0.4); border-radius: 20px;
+    width: 100%; max-width: 460px; max-height: 82vh; display: flex; flex-direction: column;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.85); animation: cardIn .3s ease;
+  }
+  .modal-head {
+    padding: 16px 20px; border-bottom: 1px solid rgba(124,92,255,0.2);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-head h3 {
+    font-family: 'Caveat', cursive; font-size: 26px; color: #b8a8ff; margin: 0;
+  }
+  .modal-close {
+    background: transparent; color: #8888a8; font-size: 22px; padding: 4px 8px; border-radius: 8px;
+  }
+  .modal-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .modal-body {
+    padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px;
+  }
+  .participant-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(124,92,255,0.1); border: 1px solid rgba(124,92,255,0.2);
+    padding: 9px 14px; border-radius: 12px;
+  }
+  .participant-row .p-name { font-size: 16px; color: #ececf5; font-weight: 500; }
+  .kick-btn {
+    background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.4);
+    color: #ff8888; border-radius: 8px; padding: 4px 10px; font-size: 13px;
+    transition: background .15s;
+  }
+  .kick-btn:hover { background: rgba(239,68,68,0.35); }
+  .modal-foot {
+    padding: 12px 18px; background: rgba(0,0,0,0.25); border-top: 1px solid rgba(124,92,255,0.15);
+    font-size: 13px; color: #8888a8; text-align: center;
+  }
+
   /* ============ MOBIEL ============ */
   @media (max-width: 500px) {
     main { padding: 18px 14px 180px; }
@@ -656,11 +736,13 @@
 </style>
 </head>
 <body>
+
 <!-- ============ LOGIN ============ -->
 <div id="login">
   <div class="login-card">
     <h1>Respect</h1>
     <p class="sub">Tieneravond • Jakobus 3:5–12</p>
+    
     <div id="roleChoice">
       <button class="btn btn-primary" data-role="deelnemer">Ik doe mee als deelnemer</button>
       <button class="btn btn-secondary" id="leiderChoiceBtn">Ik ben gespreksleider</button>
@@ -674,15 +756,42 @@
     <div id="nameEntry" class="hidden">
       <input id="nameInput" type="text" placeholder="Jouw voornaam" maxlength="20" autocomplete="off">
       <button class="btn btn-primary" id="joinBtn">Doe mee →</button>
+      <button class="btn btn-secondary" id="backToRoleBtn" style="font-size: 14px; padding: 10px; margin-top: 4px;">← Terug</button>
+    </div>
+
+    <!-- Live lobby op het inlogscherm -->
+    <div class="login-lobby">
+      <div class="lobby-title">Al aangemeld (<span id="lobbyCount">0</span>):</div>
+      <div class="lobby-tags" id="lobbyNames">
+        <span style="font-size: 13px; color: #55557a; font-style: italic;">Nog niemand online...</span>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- ============ DEELNEMERS BEHEER MODAL (VOOR LEIDER) ============ -->
+<div id="participantModal" class="hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>👥 Aangemelde tieners</h3>
+      <button class="modal-close" id="closeParticipantModalBtn">✕</button>
+    </div>
+    <div class="modal-body" id="modalParticipantList"></div>
+    <div class="modal-foot">
+      Klik op ✕ Verwijder naast een afwijkende naam om de tiener terug te sturen naar het inlogscherm.
+    </div>
+  </div>
+</div>
+
 <!-- ============ APP ============ -->
 <div id="app" class="hidden">
   <header class="app-header">
     <div class="logo">Respect</div>
     <div id="screenTitle"></div>
-    <div id="participantCount" class="pill">👥 1</div>
+    <div class="header-pills">
+      <div id="groupBadge" class="pill hidden" style="background: rgba(74,222,128,0.2); border-color: rgba(74,222,128,0.4); color: #86efac;"></div>
+      <div id="participantCount" class="pill">👥 1</div>
+    </div>
   </header>
   <main id="screensContainer"></main>
   <nav id="leaderBar" class="leader-bar hidden">
@@ -698,6 +807,7 @@
         <option value="0">Direct vrij</option>
       </select>
       <button id="startTimerBtn" style="background: rgba(124,92,255,0.25);">⏳ Start</button>
+      <button id="manageParticipantsBtn" style="background: rgba(124,92,255,0.3); border-color: rgba(124,92,255,0.5);">👥 Deelnemers (<span id="leaderPCount">0</span>)</button>
       <button id="groupBtn" style="background: rgba(74,222,128,0.2); border-color: rgba(74,222,128,0.4); color: #86efac;">👥 Groepen</button>
       <button id="resetBtn" class="danger">Reset</button>
     </div>
@@ -709,14 +819,16 @@
   </nav>
 </div>
 <div id="toast"></div>
+
 <script type="module">
 // =====================================================
 //  FIREBASE
 // =====================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getDatabase, ref, set, update, push, onValue, onChildAdded, remove, onDisconnect, query, limitToLast
+  getDatabase, ref, set, update, push, onValue, remove, onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDDBMeg_s2f7V3nUA9d0CV0Vc_ytYz0ycs",
   authDomain: "jezusendeman.firebaseapp.com",
@@ -728,6 +840,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
 // =====================================================
 //  STATE
 // =====================================================
@@ -748,7 +861,7 @@ let activeTimerInterval = null;
 const LEIDER_WACHTWOORD = "tieneravond2026";
 
 // =====================================================
-//  CONTENT (ORIGINELE TEKSTEN, FOTO'S & STICKY NOTES)
+//  CONTENT
 // =====================================================
 const STICKY_COLORS = {
   yellow: { bg: '#ffe066', text: '#3a2f00' },
@@ -825,7 +938,7 @@ const SCREENS = [
 ];
 
 // =====================================================
-//  DOM ELEMENTEN & LOGICA
+//  DOM ELEMENTEN
 // =====================================================
 const $ = (s) => document.querySelector(s);
 const loginScreen = $('#login');
@@ -838,6 +951,9 @@ const screenSelect = $('#screenSelect');
 const photoControls = $('#photoControls');
 const photoCounter = $('#photoCounter');
 const toast = $('#toast');
+const participantModal = $('#participantModal');
+const modalParticipantList = $('#modalParticipantList');
+const leaderPCount = $('#leaderPCount');
 
 document.querySelectorAll('[data-role]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -848,6 +964,11 @@ document.querySelectorAll('[data-role]').forEach(btn => {
       $('#nameInput').focus();
     }
   });
+});
+
+$('#backToRoleBtn').addEventListener('click', () => {
+  $('#nameEntry').classList.add('hidden');
+  $('#roleChoice').classList.remove('hidden');
 });
 
 $('#leiderChoiceBtn').addEventListener('click', () => {
@@ -892,6 +1013,9 @@ function startApp() {
   if (isLeader) {
     document.body.classList.add('is-leader');
     leaderBar.classList.remove('hidden');
+    participantCount.classList.add('pill-clickable');
+    participantCount.title = "Klik om deelnemers te beheren";
+    participantCount.addEventListener('click', openParticipantModal);
   }
   buildAllScreens();
   buildLeaderSelect();
@@ -915,6 +1039,18 @@ function buildAllScreens() {
   bindRevealHandlers();
   bindConceptboardHandlers();
   updateInputPermissions();
+}
+
+function renderTimerCard() {
+  return `
+    <div class="timer-card" style="background: rgba(26,26,46,0.8); border: 1px solid rgba(124,92,255,0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: center;">
+      <div style="font-family: 'Caveat', cursive; font-size: 22px; color: #b8a8ff; margin-bottom: 8px;">⏳ Eerst in gesprek met je groepje...</div>
+      <div style="background: rgba(0,0,0,0.4); border-radius: 999px; height: 10px; overflow: hidden; position: relative;">
+        <div class="timer-bar-fill" style="background: linear-gradient(135deg, #7c5cff, #ff5ca8); width: 100%; height: 100%; transition: width 0.4s linear;"></div>
+      </div>
+      <div class="timer-text" style="font-size: 14px; color: #8888a8; margin-top: 6px;">Wacht op start van de gesprekstijd...</div>
+    </div>
+  `;
 }
 
 function renderScreen(id) {
@@ -956,13 +1092,7 @@ function renderWelcome() {
     </div>
     <p class="video-intro">Bekijk het filmpje. Wat valt je op? Wat doet het met je?</p>
     
-    <div class="timer-card" style="background: rgba(26,26,46,0.8); border: 1px solid rgba(124,92,255,0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: center;">
-      <div style="font-family: 'Caveat', cursive; font-size: 22px; color: #b8a8ff; margin-bottom: 8px;">⏳ Eerst in gesprek met je groepje...</div>
-      <div style="background: rgba(0,0,0,0.4); border-radius: 999px; height: 10px; overflow: hidden; position: relative;">
-        <div id="timerBarFill" style="background: linear-gradient(135deg, #7c5cff, #ff5ca8); width: 100%; height: 100%; transition: width 1s linear;"></div>
-      </div>
-      <div id="timerText" style="font-size: 14px; color: #8888a8; margin-top: 6px;">Wacht op start van de gesprekstijd...</div>
-    </div>
+    ${renderTimerCard()}
 
     <div class="q-block" data-qid="video-reactie">
       <div class="q-header">
@@ -983,24 +1113,19 @@ function renderBinnenkomer() {
     <h2 class="screen-h">Eerste <em>indruk</em></h2>
     <p class="screen-intro">Je eerste indruk van iemand zegt vaak meer over jou dan over de ander. Kijk goed naar de foto. Wie denk je dat dit is?</p>
     
-    <div class="timer-card" style="background: rgba(26,26,46,0.8); border: 1px solid rgba(124,92,255,0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: center;">
-      <div style="font-family: 'Caveat', cursive; font-size: 22px; color: #b8a8ff; margin-bottom: 8px;">⏳ Eerst in gesprek met je groepje...</div>
-      <div style="background: rgba(0,0,0,0.4); border-radius: 999px; height: 10px; overflow: hidden; position: relative;">
-        <div id="timerBarFill" style="background: linear-gradient(135deg, #7c5cff, #ff5ca8); width: 100%; height: 100%; transition: width 1s linear;"></div>
-      </div>
-      <div id="timerText" style="font-size: 14px; color: #8888a8; margin-top: 6px;">Wacht op start van de gesprekstijd...</div>
-    </div>
+    ${renderTimerCard()}
 
     <div class="photo-stage">
       ${PHOTOS.map((p, i) => `
-        <div class="photo-slide${i === 0 ? '' : 'hidden'}" data-photo-slide="${i}">
+        <div class="photo-slide${i === 0 ? '' : ' hidden'}" data-photo-slide="${i}">
           <div class="photo-card" data-photo="${p.id}">
             <div class="photo-wrap">
               <div class="photo-fallback">?</div>
               <img src="${p.img}" alt="" onerror="this.style.display='none'">
-              <div class="photo-name">${p.name}</div>
+              <div class="photo-name">${escapeHtml(p.name)}</div>
             </div>
-            <div class="photo-info">${p.info}</div>${isLeader ? `<div class="leader-reveal-hint" data-reveal="${p.id}">Klik om naam en uitleg te onthullen</div>` : ''}
+            <div class="photo-info">${escapeHtml(p.info)}</div>
+            ${isLeader ? `<div class="leader-reveal-hint" data-reveal="${p.id}">Klik om naam en uitleg te onthullen</div>` : ''}
           </div>
           <div class="q-block" data-qid="foto-${p.id}">
             <div class="q-header">
@@ -1049,17 +1174,14 @@ function renderBijbel() {
 
 function renderQuestions(key, title, intro) {
   const qs = QUESTIONS[key];
+  const parts = title.split(' ');
+  const firstWord = parts[0];
+  const restWords = parts.slice(1).join(' ');
   return `
-    <h2 class="screen-h">${title.split(' ')[0]}<em>${title.split(' ').slice(1).join(' ')}</em></h2>
+    <h2 class="screen-h">${firstWord} <em>${restWords}</em></h2>
     <p class="screen-intro">${intro}</p>
     
-    <div class="timer-card" style="background: rgba(26,26,46,0.8); border: 1px solid rgba(124,92,255,0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: center;">
-      <div style="font-family: 'Caveat', cursive; font-size: 22px; color: #b8a8ff; margin-bottom: 8px;">⏳ Eerst in gesprek met je groepje...</div>
-      <div style="background: rgba(0,0,0,0.4); border-radius: 999px; height: 10px; overflow: hidden; position: relative;">
-        <div id="timerBarFill" style="background: linear-gradient(135deg, #7c5cff, #ff5ca8); width: 100%; height: 100%; transition: width 1s linear;"></div>
-      </div>
-      <div id="timerText" style="font-size: 14px; color: #8888a8; margin-top: 6px;">Wacht op start van de gesprekstijd...</div>
-    </div>
+    ${renderTimerCard()}
 
     ${qs.map((q, i) => `
       <div class="q-block" data-qid="${q.id}">
@@ -1086,7 +1208,7 @@ function renderConceptboard() {
       <div class="color-row">
         <div class="color-picker" id="colorPicker">
           ${Object.keys(STICKY_COLORS).map(c => `
-            <button class="color-btn${c === 'yellow' ? ' active' : ''}" data-color="${c}" style="background:${STICKY_COLORS[c].bg}"></button>
+            <button class="color-btn ${c === selectedColor ? 'active' : ''}" data-color="${c}" style="background:${STICKY_COLORS[c].bg}"></button>
           `).join('')}
         </div>
         <button id="addNoteBtn" class="add-note-btn">+ Voeg toe</button>
@@ -1126,13 +1248,7 @@ function renderBidden() {
       <p style="margin-top:12px">Bid om wijsheid om hier op een goede manier mee om te gaan — door respect te uiten naar de mensen om ons heen, die óók naar Gods beeld geschapen zijn.</p>
     </div>
     
-    <div class="timer-card" style="background: rgba(26,26,46,0.8); border: 1px solid rgba(124,92,255,0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; text-align: center;">
-      <div style="font-family: 'Caveat', cursive; font-size: 22px; color: #b8a8ff; margin-bottom: 8px;">⏳ Eerst in gesprek met je groepje...</div>
-      <div style="background: rgba(0,0,0,0.4); border-radius: 999px; height: 10px; overflow: hidden; position: relative;">
-        <div id="timerBarFill" style="background: linear-gradient(135deg, #7c5cff, #ff5ca8); width: 100%; height: 100%; transition: width 1s linear;"></div>
-      </div>
-      <div id="timerText" style="font-size: 14px; color: #8888a8; margin-top: 6px;">Wacht op start van de gesprekstijd...</div>
-    </div>
+    ${renderTimerCard()}
 
     <div class="q-block" data-qid="gebedspunten">
       <div class="q-header">
@@ -1170,6 +1286,19 @@ function buildLeaderSelect() {
   screenSelect.value = 'tandpasta';
 }
 
+function openParticipantModal() {
+  participantModal.classList.remove('hidden');
+}
+
+function closeParticipantModal() {
+  participantModal.classList.add('hidden');
+}
+
+$('#closeParticipantModalBtn').addEventListener('click', closeParticipantModal);
+participantModal.addEventListener('click', (e) => {
+  if (e.target === participantModal) closeParticipantModal();
+});
+
 function bindLeaderControls() {
   if (!isLeader) return;
   $('#prevBtn').addEventListener('click', () => {
@@ -1188,14 +1317,16 @@ function bindLeaderControls() {
     if (currentPhotoIdx < PHOTOS.length - 1) set(ref(db, 'session/currentPhoto'), currentPhotoIdx + 1);
   });
   
+  $('#manageParticipantsBtn').addEventListener('click', openParticipantModal);
+
   $('#startTimerBtn').addEventListener('click', () => {
-    const durationSec = parseInt($('#timerSelect').value);
+    const durationSec = parseInt($('#timerSelect').value, 10);
     if (durationSec === 0) {
       set(ref(db, 'session/timer'), { duration: 0, endsAt: Date.now() });
-      showToast('Timer uitgeschakeld, typen is direct vrijgegeven!');
+      showToast('Typen is direct vrijgegeven! ✍️');
     } else {
       set(ref(db, 'session/timer'), { duration: durationSec, endsAt: Date.now() + (durationSec * 1000) });
-      showToast(`Gespreksbalk gestart voor ${durationSec / 60} minuut/minuten! ⏳`);
+      showToast(`Gesprekstijd gestart (${Math.round(durationSec / 60)} min)! ⏳`);
     }
   });
 
@@ -1242,25 +1373,22 @@ function bindLeaderControls() {
         });
       });
 
+      const durationSec = parseInt($('#timerSelect').value, 10) || 120;
       set(ref(db, 'session/groups'), assignment);
-      set(ref(db, 'session/timer'), { duration: 120, endsAt: Date.now() + 120000 });
-      showToast('Groepen gegenereerd & gesprekstijd gestart! ✓');
+      set(ref(db, 'session/timer'), { duration: durationSec, endsAt: Date.now() + (durationSec * 1000) });
+      showToast('Groepen ingedeeld & gesprekstijd gestart! ✓');
     }, { onlyOnce: true });
   });
 
   $('#resetBtn').addEventListener('click', async () => {
-    if (!confirm('Weet je zeker dat je ALLE antwoorden, briefjes en deelnemers wilt verwijderen? Dit kan niet ongedaan gemaakt worden.')) return;
+    if (!confirm('Weet je zeker dat je ALLE antwoorden, briefjes en timers wilt resetten?')) return;
     await remove(ref(db, 'session/responses'));
     await remove(ref(db, 'session/revealed'));
-    await remove(ref(db, 'session/participants'));
     await remove(ref(db, 'session/stickies'));
     await remove(ref(db, 'session/groups'));
     await remove(ref(db, 'session/timer'));
     stickiesSeeded = false;
-    document.querySelectorAll('.q-feed').forEach(f => {
-      f.innerHTML = '<div class="feed-empty">Nog geen antwoorden...</div>';
-    });
-    showToast('Alles is gereset ✓');
+    showToast('Sessie is gereset ✓');
   });
 }
 
@@ -1446,6 +1574,15 @@ function makeDraggable(el, id, board) {
   el.addEventListener('pointercancel', finishDrag);
 }
 
+function updateAllTimerBars(pct, message) {
+  document.querySelectorAll('.timer-bar-fill').forEach(el => {
+    el.style.width = pct + '%';
+  });
+  document.querySelectorAll('.timer-text').forEach(el => {
+    el.textContent = message;
+  });
+}
+
 function setupFirebaseListeners() {
   onValue(ref(db, 'session/currentScreen'), (snap) => {
     const id = snap.val();
@@ -1465,13 +1602,46 @@ function setupFirebaseListeners() {
   
   onValue(ref(db, `session/groups/${uid}`), (snap) => {
     groupInfo = snap.val();
+    const groupBadge = $('#groupBadge');
+    if (groupBadge) {
+      if (groupInfo) {
+        groupBadge.classList.remove('hidden');
+        groupBadge.textContent = `Groep ${groupInfo.groupNum}${groupInfo.isTypist ? ' (✍️ Schrijver)' : ''}`;
+      } else {
+        groupBadge.classList.add('hidden');
+      }
+    }
     updateInputPermissions();
+  });
+
+  // Luister of deze tiener gekickt is door de leider
+  onValue(ref(db, `session/kicked/${uid}`), async (snap) => {
+    if (snap.exists() && !isLeader) {
+      await remove(ref(db, `session/kicked/${uid}`));
+      sessionStorage.removeItem('name');
+      sessionStorage.removeItem('role');
+      userName = '';
+      
+      alert("Je gekozen naam is afgewezen door de gespreksleider.\n\nVul alsjeblieft je eigen voornaam in om mee te doen!");
+      
+      appEl.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+      $('#nameEntry').classList.remove('hidden');
+      $('#roleChoice').classList.add('hidden');
+      $('#nameInput').value = '';
+      $('#nameInput').focus();
+    }
   });
 
   onValue(ref(db, 'session/timer'), (snap) => {
     const timerData = snap.val();
     if (!timerData) {
-      timerExpired = true;
+      if (activeTimerInterval) {
+        clearInterval(activeTimerInterval);
+        activeTimerInterval = null;
+      }
+      updateAllTimerBars(100, 'Wacht op start van de gesprekstijd...');
+      timerExpired = false;
       updateInputPermissions();
       return;
     }
@@ -1508,21 +1678,25 @@ function setupFirebaseListeners() {
   allQuestions.forEach(q => {
     const feedEl = document.querySelector(`[data-feed="${q.id}"]`);
     if (!feedEl) return;
-    feedEl.innerHTML = '<div class="feed-empty">Nog geen antwoorden...</div>';
-    const qRef = query(ref(db, `session/responses/${q.id}`), limitToLast(200));
-    onChildAdded(qRef, (snap) => {
+    
+    onValue(ref(db, `session/responses/${q.id}`), (snap) => {
       const data = snap.val();
-      if (!data) return;
-      const empty = feedEl.querySelector('.feed-empty');
-      if (empty) empty.remove();
-      const item = document.createElement('div');
-      const isGebed = q.id === 'gebedspunten';
-      item.className = 'feed-item' + (isGebed ? ' no-name' : '') + (data.uid === uid ? ' mine' : '');
-      item.innerHTML = isGebed
-        ? `<div class="feed-text">${escapeHtml(data.text || '')}</div>`
-        : `<div class="feed-name">${escapeHtml(data.name || '?')}</div>
-           <div class="feed-text">${escapeHtml(data.text || '')}</div>`;
-      feedEl.appendChild(item);
+      if (!data) {
+        feedEl.innerHTML = '<div class="feed-empty">Nog geen antwoorden...</div>';
+        return;
+      }
+      feedEl.innerHTML = '';
+      Object.entries(data).forEach(([key, res]) => {
+        if (!res || !res.text) return;
+        const item = document.createElement('div');
+        const isGebed = q.id === 'gebedspunten';
+        item.className = 'feed-item' + (isGebed ? ' no-name' : '') + (res.uid === uid ? ' mine' : '');
+        item.innerHTML = isGebed
+          ? `<div class="feed-text">${escapeHtml(res.text)}</div>`
+          : `<div class="feed-name">${escapeHtml(res.name || '?')}</div>
+             <div class="feed-text">${escapeHtml(res.text)}</div>`;
+        feedEl.appendChild(item);
+      });
       feedEl.scrollTop = feedEl.scrollHeight;
     });
   });
@@ -1531,38 +1705,43 @@ function setupFirebaseListeners() {
 function runTimer(endsAt, duration) {
   if (activeTimerInterval) clearInterval(activeTimerInterval);
 
-  const fill = document.getElementById('timerBarFill');
-  const text = document.getElementById('timerText');
-  if (!fill || !text) return;
-
   if (duration === 0) {
-    fill.style.width = '0%';
-    text.textContent = 'Gesprekstijd voorbij - typen is gestart!';
+    updateAllTimerBars(0, 'Typen is direct vrijgegeven!');
     timerExpired = true;
     updateInputPermissions();
     return;
   }
 
-  activeTimerInterval = setInterval(() => {
+  const updateTick = () => {
     const now = Date.now();
     const remaining = endsAt - now;
     
     if (remaining <= 0) {
-      clearInterval(activeTimerInterval);
-      fill.style.width = '0%';
-      text.textContent = 'Gesprekstijd voorbij - typen is gestart!';
+      if (activeTimerInterval) {
+        clearInterval(activeTimerInterval);
+        activeTimerInterval = null;
+      }
+      updateAllTimerBars(0, 'Gesprekstijd voorbij - typen is geopend! ✍️');
+      const wasExpired = timerExpired;
       timerExpired = true;
       updateInputPermissions();
+      if (!wasExpired && groupInfo && groupInfo.isTypist) {
+        showToast('De tijd is om! Je kunt nu jullie reactie typen. ✍️');
+      }
     } else {
-      const pct = (remaining / (duration * 1000)) * 100;
-      fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      const totalMs = duration * 1000;
+      const pct = Math.max(0, Math.min(100, (remaining / totalMs) * 100));
       const mins = Math.floor(remaining / 60000);
       const secs = Math.floor((remaining % 60000) / 1000);
-      text.textContent = `Nog ${mins}:${secs < 10 ? '0' : ''}${secs} minuten over`;
+      const formattedTime = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      updateAllTimerBars(pct, `Nog ${formattedTime} gesprekstijd over...`);
       timerExpired = false;
       updateInputPermissions();
     }
-  }, 1000);
+  };
+
+  updateTick();
+  activeTimerInterval = setInterval(updateTick, 400);
 }
 
 function updateInputPermissions() {
@@ -1573,35 +1752,52 @@ function updateInputPermissions() {
 
     if (isLeader) {
       input.disabled = false;
-      input.placeholder = "Typ je antwoord...";
+      input.placeholder = "Gespreksleider: typ hier een reactie...";
       btn.disabled = false;
       btn.style.opacity = '1';
       btn.style.cursor = 'pointer';
       return;
     }
 
-    const canType = timerExpired && groupInfo && groupInfo.isTypist === true;
-
-    if (canType) {
-      input.disabled = false;
-      input.placeholder = `Jij bent invoerder voor Groep ${groupInfo.groupNum}. Typ jullie antwoord...`;
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-    } else {
+    if (!timerExpired) {
       input.disabled = true;
+      btn.disabled = true;
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+
       if (groupInfo) {
-        if (groupInfo.isTypist === true) {
-          input.placeholder = "Wacht tot de gesprekstijd voorbij is...";
+        if (groupInfo.isTypist) {
+          input.placeholder = `Groep ${groupInfo.groupNum}: overleg eerst! Zodra de tijd om is mag jij (${userName}) typen.`;
         } else {
-          input.placeholder = `Overleg met je groep (${groupInfo.members.join(', ')}). ${groupInfo.members[0]} typt in.`;
+          const typist = (groupInfo.members && groupInfo.members[0]) ? groupInfo.members[0] : 'de schrijver';
+          input.placeholder = `Groep ${groupInfo.groupNum}: overleg samen. Straks typt ${typist} jullie reactie.`;
         }
       } else {
-        input.placeholder = "Wacht op groepsindeling en gesprekstijd...";
+        input.placeholder = "⏳ Eerst in gesprek met je groepje. Typen opent na de tijd...";
       }
-      btn.disabled = true;
-      btn.style.opacity = '0.4';
-      btn.style.cursor = 'not-allowed';
+    } else {
+      if (groupInfo) {
+        if (groupInfo.isTypist === true) {
+          input.disabled = false;
+          input.placeholder = `✍️ Jij bent de schrijver voor Groep ${groupInfo.groupNum}. Typ jullie antwoord...`;
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        } else {
+          input.disabled = true;
+          const typist = (groupInfo.members && groupInfo.members[0]) ? groupInfo.members[0] : 'de schrijver';
+          input.placeholder = `Groep ${groupInfo.groupNum}: ${typist} voert nu jullie reactie in.`;
+          btn.disabled = true;
+          btn.style.opacity = '0.35';
+          btn.style.cursor = 'not-allowed';
+        }
+      } else {
+        input.disabled = false;
+        input.placeholder = "Gesprekstijd voorbij: typ hier je antwoord...";
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      }
     }
   });
 }
@@ -1616,10 +1812,15 @@ function bindSubmitHandlers() {
       if (input.disabled) return;
       const text = input.value.trim();
       if (!text) return;
+      
+      const senderName = groupInfo 
+        ? `Groep ${groupInfo.groupNum} (${userName})`
+        : userName;
+        
       const itemRef = push(ref(db, `session/responses/${qid}`));
       await set(itemRef, {
         uid: uid,
-        name: userName,
+        name: senderName,
         text: text,
         ts: Date.now()
       });
@@ -1653,10 +1854,76 @@ function registerParticipant() {
 function listenParticipantCount() {
   onValue(ref(db, 'session/participants'), (snap) => {
     const data = snap.val() || {};
-    const n = Object.values(data).filter(p => p.role !== 'leider').length;
-    participantCount.textContent = `👥 ${n}`;
+    const deelnemers = Object.entries(data)
+      .filter(([id, p]) => p.role !== 'leider' && p.name)
+      .map(([id, p]) => ({ id, name: p.name }));
+    
+    participantCount.textContent = `👥 ${deelnemers.length}`;
+    if (leaderPCount) leaderPCount.textContent = deelnemers.length;
+
+    renderParticipantModalList(deelnemers);
   });
 }
+
+function renderParticipantModalList(list) {
+  if (!modalParticipantList) return;
+  if (list.length === 0) {
+    modalParticipantList.innerHTML = '<div style="color: #6b6b90; font-style: italic; text-align: center; padding: 20px 0;">Nog geen deelnemers online...</div>';
+    return;
+  }
+
+  modalParticipantList.innerHTML = list.map(p => `
+    <div class="participant-row">
+      <span class="p-name">👤 ${escapeHtml(p.name)}</span>
+      <button class="kick-btn" data-kick="${p.id}" data-name="${escapeHtml(p.name)}">✕ Verwijder</button>
+    </div>
+  `).join('');
+
+  modalParticipantList.querySelectorAll('[data-kick]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.kick;
+      const targetName = btn.dataset.name;
+      kickParticipant(targetId, targetName);
+    });
+  });
+}
+
+async function kickParticipant(targetUid, targetName) {
+  if (!confirm(`Weet je zeker dat je "${targetName}" wilt verwijderen en terugsturen naar het inlogscherm?`)) return;
+
+  await set(ref(db, `session/kicked/${targetUid}`), {
+    ts: Date.now(),
+    reason: 'Kies alsjeblieft je echte voornaam!'
+  });
+  await remove(ref(db, `session/participants/${targetUid}`));
+  await remove(ref(db, `session/groups/${targetUid}`));
+
+  showToast(`"${targetName}" is verwijderd en teruggestuurd ✓`);
+}
+
+function listenToLobby() {
+  const lobbyNames = $('#lobbyNames');
+  const lobbyCount = $('#lobbyCount');
+  if (!lobbyNames || !lobbyCount) return;
+
+  onValue(ref(db, 'session/participants'), (snap) => {
+    const data = snap.val() || {};
+    const deelnemers = Object.values(data)
+      .filter(p => p.role !== 'leider' && p.name)
+      .map(p => p.name);
+
+    lobbyCount.textContent = deelnemers.length;
+
+    if (deelnemers.length === 0) {
+      lobbyNames.innerHTML = '<span style="font-size: 13px; color: #55557a; font-style: italic;">Nog niemand online...</span>';
+    } else {
+      lobbyNames.innerHTML = deelnemers.map(name => `
+        <span class="lobby-tag">👤 ${escapeHtml(name)}</span>
+      `).join('');
+    }
+  });
+}
+listenToLobby();
 
 function escapeHtml(s) {
   return String(s)
