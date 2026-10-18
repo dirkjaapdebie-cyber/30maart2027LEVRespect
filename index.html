@@ -665,7 +665,6 @@
       <button class="btn btn-primary" data-role="deelnemer">Ik doe mee als deelnemer</button>
       <button class="btn btn-secondary" id="leiderChoiceBtn">Ik ben gespreksleider</button>
       
-      <!-- Wachtwoord invoerveld voor leider (standaard verborgen) -->
       <div id="leaderPasswordEntry" class="hidden" style="margin-top: 15px;">
         <input id="leaderPassInput" type="password" placeholder="Voer leiderswachtwoord in" style="width: 100%; padding: 14px; background: rgba(0,0,0,.35); border: 2px solid rgba(124,92,255,.3); border-radius: 14px; color: white; font-size: 16px; text-align: center; margin-bottom: 10px; outline: none;">
         <button class="btn btn-primary" id="leiderLoginBtn">Inloggen als leider →</button>
@@ -738,19 +737,18 @@ let userName = sessionStorage.getItem('name') || '';
 let isLeader = sessionStorage.getItem('role') === 'leider';
 let currentScreenId = 'tandpasta';
 let currentPhotoIdx = 0;
-// Conceptboard state
 let stickiesSeeded = false;
 let isAnyDragging = false;
 let pendingBoardData = null;
 let selectedColor = 'yellow';
 let groupInfo = null;
 let timerExpired = false;
+let activeTimerInterval = null;
 
-// Leiderswachtwoord (pas dit gerust aan)
 const LEIDER_WACHTWOORD = "tieneravond2026";
 
 // =====================================================
-//  CONTENT
+//  CONTENT (ORIGINELE TEKSTEN, FOTO'S & STICKY NOTES)
 // =====================================================
 const STICKY_COLORS = {
   yellow: { bg: '#ffe066', text: '#3a2f00' },
@@ -761,6 +759,7 @@ const STICKY_COLORS = {
   red:    { bg: '#ff7a7a', text: '#3a0000' },
   orange: { bg: '#ffb87a', text: '#3a1a00' }
 };
+
 const SEED_STICKIES = [
   { text: 'Eerst legt hij de focus op de macht van de tong, maar vanaf vers 5 vooral op het kwaad dat de tong kan voortbrengen.', color: 'red', xPct: 2, yPct: 3 },
   { text: 'Daarom gebruikt Jakobus zulke heftige woorden.', color: 'red', xPct: 42, yPct: 6 },
@@ -770,6 +769,7 @@ const SEED_STICKIES = [
   { text: "'spectare'", color: 'blue', xPct: 52, yPct: 44 },
   { text: 'de waarde die hij of zij als mens voor God heeft.', color: 'blue', xPct: 40, yPct: 78 }
 ];
+
 const PHOTOS = [
   {
     id: 'p1', name: 'Mahatma Gandhi',
@@ -797,6 +797,7 @@ const PHOTOS = [
     img: 'Screenshot 2026-09-12 09.57.07.png'
   }
 ];
+
 const QUESTIONS = {
   gesprek: [
     { id: 'g1', text: 'Wat valt je op in deze tekst? Welk vers raakt je het meest?' },
@@ -810,6 +811,7 @@ const QUESTIONS = {
     { id: 'd3', text: 'Met welke groep mensen heb jij moeite als het om respect gaat? Wees eerlijk.' }
   ]
 };
+
 const SCREENS = [
   { id: 'tandpasta', label: '🪥 Tandpasta' },
   { id: 'welcome', label: '🎬 Video' },
@@ -821,8 +823,9 @@ const SCREENS = [
   { id: 'bidden', label: '🎵 Zingen & bidden' },
   { id: 'einde', label: '✨ Afsluiting' }
 ];
+
 // =====================================================
-//  DOM
+//  DOM ELEMENTEN & LOGICA
 // =====================================================
 const $ = (s) => document.querySelector(s);
 const loginScreen = $('#login');
@@ -835,9 +838,7 @@ const screenSelect = $('#screenSelect');
 const photoControls = $('#photoControls');
 const photoCounter = $('#photoCounter');
 const toast = $('#toast');
-// =====================================================
-//  LOGIN & LEIDER WACHTWOORD LOGICA
-// =====================================================
+
 document.querySelectorAll('[data-role]').forEach(btn => {
   btn.addEventListener('click', () => {
     const role = btn.dataset.role;
@@ -849,13 +850,11 @@ document.querySelectorAll('[data-role]').forEach(btn => {
   });
 });
 
-// Toon het wachtwoordveld wanneer op de leiderknop wordt geklikt
 $('#leiderChoiceBtn').addEventListener('click', () => {
   $('#leaderPasswordEntry').classList.toggle('hidden');
   $('#leaderPassInput').focus();
 });
 
-// Controleer het wachtwoord
 $('#leiderLoginBtn').addEventListener('click', () => {
   const ingevoerdWachtwoord = $('#leaderPassInput').value;
   if (ingevoerdWachtwoord === LEIDER_WACHTWOORD) {
@@ -870,13 +869,13 @@ $('#leiderLoginBtn').addEventListener('click', () => {
   }
 });
 
-// Ook direct inloggen met Enter op het wachtwoordveld
 $('#leaderPassInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { $('#leiderLoginBtn').click(); }
 });
 
 $('#joinBtn').addEventListener('click', joinAsParticipant);
 $('#nameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') joinAsParticipant(); });
+
 function joinAsParticipant() {
   const name = $('#nameInput').value.trim();
   if (name.length < 1) { showToast('Vul je voornaam in'); return; }
@@ -886,9 +885,7 @@ function joinAsParticipant() {
   sessionStorage.setItem('role', 'deelnemer');
   startApp();
 }
-// =====================================================
-//  START
-// =====================================================
+
 function startApp() {
   loginScreen.classList.add('hidden');
   appEl.classList.remove('hidden');
@@ -903,9 +900,7 @@ function startApp() {
   registerParticipant();
   listenParticipantCount();
 }
-// =====================================================
-//  BUILD SCREENS
-// =====================================================
+
 function buildAllScreens() {
   screensContainer.innerHTML = '';
   SCREENS.forEach((s, idx) => {
@@ -921,6 +916,7 @@ function buildAllScreens() {
   bindConceptboardHandlers();
   updateInputPermissions();
 }
+
 function renderScreen(id) {
   switch (id) {
     case 'tandpasta': return renderTandpasta();
@@ -935,6 +931,7 @@ function renderScreen(id) {
   }
   return '';
 }
+
 function renderTandpasta() {
   return `
     <div class="tandpasta-stage">
@@ -942,6 +939,7 @@ function renderTandpasta() {
     </div>
   `;
 }
+
 function renderWelcome() {
   return `
     <div class="hero">
@@ -979,6 +977,7 @@ function renderWelcome() {
     </div>
   `;
 }
+
 function renderBinnenkomer() {
   return `
     <h2 class="screen-h">Eerste <em>indruk</em></h2>
@@ -1022,6 +1021,7 @@ function renderBinnenkomer() {
     </div>
   `;
 }
+
 function renderBijbel() {
   return `
     <h2 class="screen-h">Jakobus <em>3:5–12</em></h2>
@@ -1046,6 +1046,7 @@ function renderBijbel() {
     </div>
   `;
 }
+
 function renderQuestions(key, title, intro) {
   const qs = QUESTIONS[key];
   return `
@@ -1075,6 +1076,7 @@ function renderQuestions(key, title, intro) {
     `).join('')}
   `;
 }
+
 function renderConceptboard() {
   return `
     <h2 class="screen-h">Briefjes<em>bord</em></h2>
@@ -1095,6 +1097,7 @@ function renderConceptboard() {
     </div>
   `;
 }
+
 function renderBidden() {
   return `
     <h2 class="screen-h">Zingen & <em>bidden</em></h2>
@@ -1144,6 +1147,7 @@ function renderBidden() {
     </div>
   `;
 }
+
 function renderEinde() {
   return `
     <div class="hero">
@@ -1154,9 +1158,7 @@ function renderEinde() {
     </div>
   `;
 }
-// =====================================================
-//  SCREEN NAVIGATIE
-// =====================================================
+
 function buildLeaderSelect() {
   screenSelect.innerHTML = '';
   SCREENS.forEach(s => {
@@ -1167,6 +1169,7 @@ function buildLeaderSelect() {
   });
   screenSelect.value = 'tandpasta';
 }
+
 function bindLeaderControls() {
   if (!isLeader) return;
   $('#prevBtn').addEventListener('click', () => {
@@ -1185,7 +1188,6 @@ function bindLeaderControls() {
     if (currentPhotoIdx < PHOTOS.length - 1) set(ref(db, 'session/currentPhoto'), currentPhotoIdx + 1);
   });
   
-  // Timer starten vanuit leider
   $('#startTimerBtn').addEventListener('click', () => {
     const durationSec = parseInt($('#timerSelect').value);
     if (durationSec === 0) {
@@ -1197,7 +1199,6 @@ function bindLeaderControls() {
     }
   });
 
-  // Groepen genereren knop
   $('#groupBtn').addEventListener('click', () => {
     onValue(ref(db, 'session/participants'), (snap) => {
       const participants = snap.val() || {};
@@ -1262,6 +1263,7 @@ function bindLeaderControls() {
     showToast('Alles is gereset ✓');
   });
 }
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(el => {
     el.classList.toggle('hidden', el.dataset.screenId !== id);
@@ -1275,16 +1277,19 @@ function showScreen(id) {
   }
   updateInputPermissions();
 }
+
 function updateHeaderTitle(id) {
   const s = SCREENS.find(x => x.id === id);
   screenTitle.textContent = s ? s.label.replace(/^[^\s]+\s/, '') : '';
 }
+
 function setCurrentScreen(id) {
   set(ref(db, 'session/currentScreen'), id);
   if (id === 'binnenkomer') {
     set(ref(db, 'session/currentPhoto'), 0);
   }
 }
+
 function showPhotoSlide(idx) {
   document.querySelectorAll('[data-photo-slide]').forEach((el, i) => {
     el.classList.toggle('hidden', i !== idx);
@@ -1297,9 +1302,7 @@ function showPhotoSlide(idx) {
   currentPhotoIdx = idx;
   if (photoCounter) photoCounter.textContent = `${idx + 1}/${PHOTOS.length}`;
 }
-// =====================================================
-//  CONCEPTBOARD
-// =====================================================
+
 function bindConceptboardHandlers() {
   const picker = document.getElementById('colorPicker');
   if (!picker) return;
@@ -1333,6 +1336,7 @@ function bindConceptboardHandlers() {
     if (e.key === 'Enter') { e.preventDefault(); addNote(); }
   });
 }
+
 function renderBoard(data) {
   const board = document.getElementById('board');
   if (!board) return;
@@ -1365,6 +1369,7 @@ function renderBoard(data) {
   });
   clampStickyPositions();
 }
+
 function clampStickyPositions() {
   const board = document.getElementById('board');
   if (!board) return;
@@ -1383,6 +1388,7 @@ function clampStickyPositions() {
     }
   });
 }
+
 function makeDraggable(el, id, board) {
   let dragging = false;
   let startX = 0, startY = 0, startLeft = 0, startTop = 0;
@@ -1439,9 +1445,7 @@ function makeDraggable(el, id, board) {
   el.addEventListener('pointerup', finishDrag);
   el.addEventListener('pointercancel', finishDrag);
 }
-// =====================================================
-//  FIREBASE LISTENERS & TIMER LOGIC
-// =====================================================
+
 function setupFirebaseListeners() {
   onValue(ref(db, 'session/currentScreen'), (snap) => {
     const id = snap.val();
@@ -1493,6 +1497,7 @@ function setupFirebaseListeners() {
     }
     renderBoard(data);
   });
+
   const allQuestions = [
     { id: 'video-reactie' },
     { id: 'gebedspunten' },
@@ -1524,6 +1529,8 @@ function setupFirebaseListeners() {
 }
 
 function runTimer(endsAt, duration) {
+  if (activeTimerInterval) clearInterval(activeTimerInterval);
+
   const fill = document.getElementById('timerBarFill');
   const text = document.getElementById('timerText');
   if (!fill || !text) return;
@@ -1536,12 +1543,12 @@ function runTimer(endsAt, duration) {
     return;
   }
 
-  const interval = setInterval(() => {
+  activeTimerInterval = setInterval(() => {
     const now = Date.now();
     const remaining = endsAt - now;
     
     if (remaining <= 0) {
-      clearInterval(interval);
+      clearInterval(activeTimerInterval);
       fill.style.width = '0%';
       text.textContent = 'Gesprekstijd voorbij - typen is gestart!';
       timerExpired = true;
@@ -1553,6 +1560,7 @@ function runTimer(endsAt, duration) {
       const secs = Math.floor((remaining % 60000) / 1000);
       text.textContent = `Nog ${mins}:${secs < 10 ? '0' : ''}${secs} minuten over`;
       timerExpired = false;
+      updateInputPermissions();
     }
   }, 1000);
 }
@@ -1572,7 +1580,7 @@ function updateInputPermissions() {
       return;
     }
 
-    const canType = timerExpired && groupInfo && groupInfo.isTypist;
+    const canType = timerExpired && groupInfo && groupInfo.isTypist === true;
 
     if (canType) {
       input.disabled = false;
@@ -1583,7 +1591,7 @@ function updateInputPermissions() {
     } else {
       input.disabled = true;
       if (groupInfo) {
-        if (groupInfo.isTypist) {
+        if (groupInfo.isTypist === true) {
           input.placeholder = "Wacht tot de gesprekstijd voorbij is...";
         } else {
           input.placeholder = `Overleg met je groep (${groupInfo.members.join(', ')}). ${groupInfo.members[0]} typt in.`;
@@ -1598,9 +1606,6 @@ function updateInputPermissions() {
   });
 }
 
-// =====================================================
-//  SUBMIT HANDLERS
-// =====================================================
 function bindSubmitHandlers() {
   document.querySelectorAll('.q-block').forEach(block => {
     const qid = block.dataset.qid;
@@ -1627,6 +1632,7 @@ function bindSubmitHandlers() {
     });
   });
 }
+
 function bindRevealHandlers() {
   if (!isLeader) return;
   document.querySelectorAll('[data-reveal]').forEach(el => {
@@ -1636,15 +1642,14 @@ function bindRevealHandlers() {
     });
   });
 }
-// =====================================================
-//  DEELNEMERS
-// =====================================================
+
 function registerParticipant() {
   const pRef = ref(db, `session/participants/${uid}`);
   set(pRef, { name: userName, role: isLeader ? 'leider' : 'deelnemer', ts: Date.now() });
   onDisconnect(pRef).remove();
   window.addEventListener('beforeunload', () => { remove(pRef); });
 }
+
 function listenParticipantCount() {
   onValue(ref(db, 'session/participants'), (snap) => {
     const data = snap.val() || {};
@@ -1652,9 +1657,7 @@ function listenParticipantCount() {
     participantCount.textContent = `👥 ${n}`;
   });
 }
-// =====================================================
-//  HELPERS
-// =====================================================
+
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g, '&amp;')
@@ -1663,6 +1666,7 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
 let toastTimer;
 function showToast(msg) {
   toast.textContent = msg;
@@ -1670,9 +1674,7 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
 }
-// =====================================================
-//  AUTO-LOGIN
-// =====================================================
+
 if (userName && sessionStorage.getItem('role')) {
   isLeader = sessionStorage.getItem('role') === 'leider';
   startApp();
