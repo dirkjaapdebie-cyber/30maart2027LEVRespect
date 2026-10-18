@@ -323,6 +323,26 @@
     background: linear-gradient(135deg, #7c5cff, #ff5ca8);
     width: 26px; border-radius: 4px;
   }
+
+  /* ============ GESPREK SLIDES (AFZONDERLIJK) ============ */
+  .gesprek-stage {
+    display: flex; flex-direction: column; width: 100%;
+  }
+  .gesprek-slide {
+    animation: fadeUp .4s ease;
+    width: 100%;
+  }
+  .gesprek-slide.hidden { display: none !important; }
+  .gesprek-stage .photo-dots {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+  .gesprek-stage .q-feed {
+    min-height: 120px;
+    max-height: 440px;
+  }
+  body.is-leader .gesprek-stage .dot { cursor: pointer; }
+
   /* ============ BIJBEL ============ */
   .bible-card {
     background: linear-gradient(180deg, rgba(26,26,46,.9), rgba(20,20,38,.9));
@@ -816,6 +836,12 @@
       <span class="counter" id="photoCounter">1/5</span>
       <button id="nextPhotoBtn">Volgende foto ▶</button>
     </div>
+    <!-- Leidersbediening voor de afzonderlijke Gespreksvragen -->
+    <div class="leader-row hidden" id="gesprekControls">
+      <button id="prevGesprekBtn">◀ Vorige vraag</button>
+      <span class="counter" id="gesprekCounter">Vraag 1/4</span>
+      <button id="nextGesprekBtn">Volgende vraag ▶</button>
+    </div>
   </nav>
 </div>
 <div id="toast"></div>
@@ -850,6 +876,7 @@ let userName = sessionStorage.getItem('name') || '';
 let isLeader = sessionStorage.getItem('role') === 'leider';
 let currentScreenId = 'tandpasta';
 let currentPhotoIdx = 0;
+let currentGesprekIdx = 0;
 let stickiesSeeded = false;
 let isAnyDragging = false;
 let pendingBoardData = null;
@@ -950,6 +977,8 @@ const leaderBar = $('#leaderBar');
 const screenSelect = $('#screenSelect');
 const photoControls = $('#photoControls');
 const photoCounter = $('#photoCounter');
+const gesprekControls = $('#gesprekControls');
+const gesprekCounter = $('#gesprekCounter');
 const toast = $('#toast');
 const participantModal = $('#participantModal');
 const modalParticipantList = $('#modalParticipantList');
@@ -1020,6 +1049,7 @@ function startApp() {
   buildAllScreens();
   buildLeaderSelect();
   bindLeaderControls();
+  bindGesprekDotHandlers();
   setupFirebaseListeners();
   registerParticipant();
   listenParticipantCount();
@@ -1059,7 +1089,7 @@ function renderScreen(id) {
     case 'welcome': return renderWelcome();
     case 'binnenkomer': return renderBinnenkomer();
     case 'bijbel': return renderBijbel();
-    case 'gesprek': return renderQuestions('gesprek', '💬 Met elkaar in gesprek', 'Deel je gedachten. Er zijn geen foute antwoorden — we leren van elkaar.');
+    case 'gesprek': return renderGesprek();
     case 'conceptboard': return renderConceptboard();
     case 'denkduwtjes': return renderQuestions('denkduwtjes', '🤔 Denkduwtjes', 'Even eerlijk naar jezelf kijken. Wat zou jij willen veranderen?');
     case 'bidden': return renderBidden();
@@ -1136,7 +1166,7 @@ function renderBinnenkomer() {
               <input type="text" placeholder="Wacht tot de gesprekstijd voorbij is..." disabled autocomplete="off">
               <button class="q-send" disabled style="opacity: 0.4; cursor: not-allowed;">➤</button>
             </div>
-            <div class="q-feed" data-feed="foto-${p.id}"></div>
+            <div class="q-feed" data-feed="${p.id}"></div>
           </div>
           <div class="photo-dots">
             ${PHOTOS.map((_, j) => `<span class="dot${j === i ? ' active' : ''}"></span>`).join('')}
@@ -1168,6 +1198,38 @@ function renderBijbel() {
     <div class="list-card">
       <h3>Even terug</h3>
       <p>Jakobus zegt: <strong>elk mens is gemaakt naar het beeld van God</strong>. Als je iemand respectloos behandelt, doe je dus ook God tekort. Daarom gaat respect verder dan 'aardig doen' — het gaat om wie de ander écht is in Gods ogen.</p>
+    </div>
+  `;
+}
+
+/* ============ GESPREK MET AFZONDERLIJKE VRAGEN ============ */
+function renderGesprek() {
+  const qs = QUESTIONS.gesprek;
+  return `
+    <h2 class="screen-h">💬 <em>Met elkaar in gesprek</em></h2>
+    <p class="screen-intro">Deel je gedachten. Er zijn geen foute antwoorden — we leren van elkaar.</p>
+    
+    ${renderTimerCard()}
+
+    <div class="gesprek-stage">
+      ${qs.map((q, i) => `
+        <div class="gesprek-slide${i === 0 ? '' : ' hidden'}" data-gesprek-slide="${i}">
+          <div class="q-block" data-qid="${q.id}">
+            <div class="q-header">
+              <div class="q-num">${i + 1}</div>
+              <div class="q-text">${escapeHtml(q.text)}</div>
+            </div>
+            <div class="q-input-row">
+              <input type="text" placeholder="Wacht tot de gesprekstijd voorbij is..." disabled autocomplete="off">
+              <button class="q-send" disabled style="opacity: 0.4; cursor: not-allowed;">➤</button>
+            </div>
+            <div class="q-feed" data-feed="${q.id}"></div>
+          </div>
+          <div class="photo-dots">
+            ${qs.map((_, j) => `<span class="dot${j === i ? ' active' : ''}" data-gesprek-dot="${j}" title="Vraag ${j + 1}"></span>`).join('')}
+          </div>
+        </div>
+      `).join('')}
     </div>
   `;
 }
@@ -1316,6 +1378,14 @@ function bindLeaderControls() {
   $('#nextPhotoBtn').addEventListener('click', () => {
     if (currentPhotoIdx < PHOTOS.length - 1) set(ref(db, 'session/currentPhoto'), currentPhotoIdx + 1);
   });
+
+  // Vragen navigatie voor scherm Gesprek
+  $('#prevGesprekBtn').addEventListener('click', () => {
+    if (currentGesprekIdx > 0) set(ref(db, 'session/currentGesprekVraag'), currentGesprekIdx - 1);
+  });
+  $('#nextGesprekBtn').addEventListener('click', () => {
+    if (currentGesprekIdx < QUESTIONS.gesprek.length - 1) set(ref(db, 'session/currentGesprekVraag'), currentGesprekIdx + 1);
+  });
   
   $('#manageParticipantsBtn').addEventListener('click', openParticipantModal);
 
@@ -1387,8 +1457,20 @@ function bindLeaderControls() {
     await remove(ref(db, 'session/stickies'));
     await remove(ref(db, 'session/groups'));
     await remove(ref(db, 'session/timer'));
+    await remove(ref(db, 'session/currentGesprekVraag'));
     stickiesSeeded = false;
     showToast('Sessie is gereset ✓');
+  });
+}
+
+function bindGesprekDotHandlers() {
+  document.querySelectorAll('[data-gesprek-dot]').forEach(dot => {
+    if (isLeader) {
+      dot.addEventListener('click', () => {
+        const idx = parseInt(dot.dataset.gesprekDot, 10);
+        set(ref(db, 'session/currentGesprekVraag'), idx);
+      });
+    }
   });
 }
 
@@ -1402,6 +1484,7 @@ function showScreen(id) {
   currentScreenId = id;
   if (isLeader) {
     photoControls.classList.toggle('hidden', id !== 'binnenkomer');
+    gesprekControls.classList.toggle('hidden', id !== 'gesprek');
   }
   updateInputPermissions();
 }
@@ -1416,19 +1499,36 @@ function setCurrentScreen(id) {
   if (id === 'binnenkomer') {
     set(ref(db, 'session/currentPhoto'), 0);
   }
+  if (id === 'gesprek') {
+    set(ref(db, 'session/currentGesprekVraag'), 0);
+  }
 }
 
 function showPhotoSlide(idx) {
   document.querySelectorAll('[data-photo-slide]').forEach((el, i) => {
     el.classList.toggle('hidden', i !== idx);
   });
-  document.querySelectorAll('.photo-dots').forEach(dots => {
+  document.querySelectorAll('.photo-stage .photo-dots').forEach(dots => {
     dots.querySelectorAll('.dot').forEach((d, j) => {
       d.classList.toggle('active', j === idx);
     });
   });
   currentPhotoIdx = idx;
   if (photoCounter) photoCounter.textContent = `${idx + 1}/${PHOTOS.length}`;
+}
+
+function showGesprekSlide(idx) {
+  document.querySelectorAll('[data-gesprek-slide]').forEach((el, i) => {
+    el.classList.toggle('hidden', i !== idx);
+  });
+  document.querySelectorAll('.gesprek-stage .photo-dots').forEach(dots => {
+    dots.querySelectorAll('.dot').forEach((d, j) => {
+      d.classList.toggle('active', j === idx);
+    });
+  });
+  currentGesprekIdx = idx;
+  if (gesprekCounter) gesprekCounter.textContent = `Vraag ${idx + 1}/${QUESTIONS.gesprek.length}`;
+  updateInputPermissions();
 }
 
 function bindConceptboardHandlers() {
@@ -1592,6 +1692,13 @@ function setupFirebaseListeners() {
     const idx = snap.val() ?? 0;
     showPhotoSlide(Math.max(0, Math.min(PHOTOS.length - 1, idx)));
   });
+  
+  // Realtime gesynchroniseerde gespreksvraag
+  onValue(ref(db, 'session/currentGesprekVraag'), (snap) => {
+    const idx = snap.val() ?? 0;
+    showGesprekSlide(Math.max(0, Math.min(QUESTIONS.gesprek.length - 1, idx)));
+  });
+
   onValue(ref(db, 'session/revealed'), (snap) => {
     const data = snap.val() || {};
     PHOTOS.forEach(p => {
